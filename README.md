@@ -1,4 +1,4 @@
-# 🚕 NYC Yellow Taxi: Big Data Analytics & Trip Duration Predictor
+﻿# 🚕 NYC Yellow Taxi: Big Data Analytics & Trip Duration Predictor
 
 This repository contains a comprehensive Big Data analysis of over **3.7 million** NYC Yellow Taxi trip records (January 2026). The project encompasses Data Engineering, Exploratory Data Analysis (EDA), Statistical Hypothesis Testing, Machine Learning modeling, and an interactive Streamlit Dashboard optimized for large-scale data rendering.
 
@@ -11,11 +11,11 @@ Analyzing millions of geographical data points presents significant computationa
 ### 💡 Key Findings
 * **The Manhattan Monopoly:** The vast majority of taxi demand is hyper-concentrated in Manhattan, with trips both originating and ending within the borough dominating the dataset.
 * **Tipping Psychology:** A Mann-Whitney U test statistically proves ($p < 0.05$) that passengers paying via Credit Card tip significantly higher than those paying with Cash.
-* **Predictive Modeling:** A `CatBoost` Regression model was deployed to predict trip duration (in minutes) based on pickup location, dropoff location, trip distance, day, and hour. The model successfully navigates the complex temporal and spatial features of NYC traffic.
+* **Predictive Modeling:** A `CatBoost` Regression model was deployed to predict trip duration (in minutes) based on pickup location, dropoff location, trip distance, day, and hour. The model successfully navigates the complex temporal and spatial features of NYC traffic, outperforming a baseline Linear Regression model.
 
 ---
 
-## 📸 Analytical Highlights
+## 📈 Analytical Highlights
 
 <p align="center">
   <img src="img/EDA/NYC_Yellow_Taxi_Trip_Demand_Heatmap_by_Day_and_Hour.png" width="850" title="Demand Heatmap"><br>
@@ -29,20 +29,21 @@ Analyzing millions of geographical data points presents significant computationa
 
 ---
 
-## 🗂️ Project Structure
+## 📁 Project Structure
 
 ```text
-├── data/                                      # Dataset (Parquet) and zone lookup tables
-├── img/                                       # Exported high-resolution visual plots
-│   ├── EDA/                                   # Exploratory Data Analysis graphs
-│   ├── ML/                                    # Machine Learning validation graphs
-│   ├── distribution/                          # Feature distribution graphs
-│   └── geospatial/                            # NYC map rendering plots
-├── models/                                    # Pickled Machine Learning models (.pkl)
-├── main.ipynb                                 # Complete Notebook for EDA & Modeling
-├── app.py                                     # High-performance Streamlit Dashboard
-├── Dataset_explanation.md                     # Schema definitions
-└── README.md                                  # Project documentation
+📂 data/                                      # Dataset (Parquet) and zone lookup tables
+📂 img/                                       # Exported high-resolution visual plots
+ ┣ 📂 EDA/                                    # Exploratory Data Analysis graphs
+ ┣ 📂 ML/                                     # Machine Learning validation graphs
+ ┣ 📂 distribution/                           # Feature distribution graphs
+ ┗ 📂 geospatial/                             # NYC map rendering plots
+📂 models/                                    # Pickled Machine Learning models (.pkl)
+📜 main.ipynb                                 # Complete Notebook for EDA & Modeling
+📜 app.py                                     # High-performance Streamlit Dashboard
+📜 Dataset_explanation.md                     # Schema definitions
+📜 taxi_zone_exp.md                           # Lookup table explanation
+📜 README.md                                  # Project documentation
 ```
 
 ---
@@ -55,11 +56,11 @@ Ensure you have Python 3.9+ installed and that the `yellow_tripdata_2026-01.parq
 ### 2. Installation
 Install the required dependencies using pip:
 ```bash
-pip install streamlit pandas numpy plotly joblib pyarrow scikit-learn
+pip install -r requirements.txt
 ```
 
 ### 3. Running the Dashboard
-Launch the interactive Streamlit application (it utilizes `st.cache_data` and pre-aggregation to ensure fast loading times):
+Launch the interactive Streamlit application. The dashboard utilizes `st.cache_data`, `geopandas`, and pre-aggregation to ensure lightning-fast rendering of the 3.7 million records:
 ```bash
 streamlit run app.py
 ```
