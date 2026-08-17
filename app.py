@@ -1,4 +1,5 @@
 import os
+import glob
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -29,6 +30,16 @@ st.markdown("""
     
     header {visibility: hidden;}
     footer {visibility: hidden;}
+    
+    /* Force Global Dark Theme */
+    .stApp {
+        background-color: #0E1117;
+        color: #C9D1D9;
+    }
+    
+    h1, h2, h3, h4, h5, h6, span, p, div {
+        color: #C9D1D9;
+    }
     
     /* Clean, luxurious cards */
     .metric-card {
@@ -107,6 +118,23 @@ st.markdown("""
         font-size: 16px;
         font-weight: 600;
     }
+    
+    /* Custom Scrollbar for side list */
+    .scroll-container {
+        max-height: 600px;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
+    .scroll-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    .scroll-container::-webkit-scrollbar-track {
+        background: #08090A;
+    }
+    .scroll-container::-webkit-scrollbar-thumb {
+        background: #2D3139;
+        border-radius: 4px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -155,15 +183,27 @@ if zones_gdf is not None:
 # -------------------------------------------------------------------
 # Header & KPIs
 # -------------------------------------------------------------------
-st.title("NYC Yellow Taxi Intelligence")
-st.markdown("<p style='color: #8B949E; font-size: 16px; margin-bottom: 30px;'>Analyzing 3.7+ Million High-Frequency Transport Transactions.</p>", unsafe_allow_html=True)
+st.markdown("""
+<div style="background: linear-gradient(135deg, #111315 0%, #1A1C20 100%); padding: 40px; border-radius: 16px; border: 1px solid #2D3139; margin-bottom: 30px; position: relative; overflow: hidden;">
+    <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(251, 192, 45, 0.1) 0%, rgba(0,0,0,0) 70%); border-radius: 50%;"></div>
+    <h1 style="color: #FFFFFF; font-size: 42px; font-weight: 700; margin: 0; padding: 0;">NYC Yellow Taxi Intelligence</h1>
+    <div style="display: flex; align-items: center; margin-top: 12px; gap: 16px;">
+        <span style="background-color: rgba(251, 192, 45, 0.15); color: #FBC02D; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(251, 192, 45, 0.3);">🗓️ JAN 1 - JAN 31, 2026</span>
+        <span style="color: #8B949E; font-size: 14px; font-weight: 600;">|</span>
+        <span style="color: #8B949E; font-size: 14px; font-weight: 600;">ALL 5 BOROUGHS</span>
+    </div>
+    <p style="color: #8B949E; font-size: 16px; max-width: 800px; margin-top: 20px; line-height: 1.6;">
+        Processing over 3.7 million high-frequency transport transactions to uncover spatial routing inefficiencies, temporal demand matrices, and tipping psychology across New York City.
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 if not df.empty:
     k1, k2, k3, k4 = st.columns(4)
-    with k1: st.markdown(f'<div class="metric-card"><div class="metric-title">Total Volume</div><div class="metric-value">{len(df)/1e6:.1f}<span class="metric-accent">M</span></div></div>', unsafe_allow_html=True)
-    with k2: st.markdown(f'<div class="metric-card"><div class="metric-title">Gross Revenue</div><div class="metric-value"><span class="metric-accent">$</span>{df["total_amount"].sum()/1e6:.1f}M</div></div>', unsafe_allow_html=True)
-    with k3: st.markdown(f'<div class="metric-card"><div class="metric-title">Avg Distance</div><div class="metric-value">{df["trip_distance"].mean():.1f}<span class="metric-accent"> mi</span></div></div>', unsafe_allow_html=True)
-    with k4: st.markdown(f'<div class="metric-card"><div class="metric-title">Zero-Tip Rides</div><div class="metric-value">{len(df[df["tip_amount"]==0]):,}</div></div>', unsafe_allow_html=True)
+    with k1: st.markdown(f'<div class="metric-card" style="border-top: 3px solid #FBC02D;"><div class="metric-title">Total Volume</div><div class="metric-value">{len(df)/1e6:.1f}<span class="metric-accent">M</span></div></div>', unsafe_allow_html=True)
+    with k2: st.markdown(f'<div class="metric-card" style="border-top: 3px solid #FBC02D;"><div class="metric-title">Gross Revenue</div><div class="metric-value"><span class="metric-accent">$</span>{df["total_amount"].sum()/1e6:.1f}M</div></div>', unsafe_allow_html=True)
+    with k3: st.markdown(f'<div class="metric-card" style="border-top: 3px solid #FBC02D;"><div class="metric-title">Avg Distance</div><div class="metric-value">{df["trip_distance"].mean():.1f}<span class="metric-accent"> mi</span></div></div>', unsafe_allow_html=True)
+    with k4: st.markdown(f'<div class="metric-card" style="border-top: 3px solid #FBC02D;"><div class="metric-title">Zero-Tip Rides</div><div class="metric-value">{len(df[df["tip_amount"]==0]):,}</div></div>', unsafe_allow_html=True)
     
 st.write("")
 st.write("")
@@ -195,15 +235,21 @@ with tab1:
                     hover_data={'Trips': True},
                     color_continuous_scale="Inferno",
                     mapbox_style="carto-darkmatter",
-                    zoom=9.5, center={"lat": 40.7128, "lon": -74.0060},
+                    zoom=9.2, center={"lat": 40.7306, "lon": -73.9352},
                     opacity=0.75,
                 )
-                fig_map.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, paper_bgcolor='rgba(0,0,0,0)', font_family="Space Grotesk")
-                st.plotly_chart(fig_map, use_container_width=True, height=600)
+                
+                fig_map.update_layout(
+                    margin={"r":0,"t":0,"l":0,"b":0}, 
+                    paper_bgcolor='rgba(0,0,0,0)', 
+                    font_family="Space Grotesk"
+                )
+                st.plotly_chart(fig_map, use_container_width=True, height=600, config={'scrollZoom': True})
             
         with c2:
             st.markdown("#### High-Density Nodes")
-            top_zones = gdf_mapped.sort_values(by='Trips', ascending=False).head(8).reset_index()
+            st.markdown('<div class="scroll-container">', unsafe_allow_html=True)
+            top_zones = gdf_mapped.sort_values(by='Trips', ascending=False).head(20).reset_index()
             for idx, row in top_zones.iterrows():
                 st.markdown(f"""
                 <div style="background-color: #1A1C20; padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #FBC02D;">
@@ -211,29 +257,43 @@ with tab1:
                     <span style="color: #FBC02D; font-weight: 700;">{row['Trips']:,.0f}</span>
                 </div>
                 """, unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= TAB 2: NATIVE ANALYTICS =================
 with tab2:
-    st.markdown("### Curated Data Science Visualizations")
-    st.markdown("<p style='color: #8B949E; margin-bottom: 30px;'>Pristine Matplotlib renderings exported directly from the central Jupyter pipeline.</p>", unsafe_allow_html=True)
+    st.markdown("### Comprehensive EDA & ML Validation Repository")
+    st.markdown("<p style='color: #8B949E; margin-bottom: 30px;'>Pristine Matplotlib renderings exported directly from the central Jupyter pipeline. Browse all generated visualizations below.</p>", unsafe_allow_html=True)
     
-    col_a, col_b = st.columns(2)
-    with col_a:
-        st.image("img/EDA/NYC_Yellow_Taxi_Trip_Demand_Heatmap_by_Day_and_Hour.png", caption="Temporal Demand Matrix", use_container_width=True)
-        st.write("")
-        st.image("img/EDA/NYC_Yellow_Taxi_Average_Speed_by_Pickup_Hour.png", caption="Traffic Physics (Speed vs Hour)", use_container_width=True)
-    with col_b:
-        st.image("img/EDA/NYC_Yellow_Taxi_Trip_Profile_by_Payment_Method.png", caption="Financial Profiling", use_container_width=True)
-        st.write("")
-        st.image("img/EDA/Top_15_NYC_Yellow_Taxi_Borough_Routes_by_Trip_Count.png", caption="Macro Routing Preferences", use_container_width=True)
+    cat_tabs = st.tabs(["Exploratory Data Analysis", "Feature Distributions", "Geospatial Profiles", "Machine Learning Evaluation"])
+    
+    directories = [
+        ("img/EDA/*.png", cat_tabs[0]),
+        ("img/distribution/*.png", cat_tabs[1]),
+        ("img/geospatial/*.png", cat_tabs[2]),
+        ("img/ML/*.png", cat_tabs[3])
+    ]
+    
+    for path_pattern, t in directories:
+        with t:
+            images = glob.glob(path_pattern)
+            if not images:
+                st.info("No images found in this category.")
+            else:
+                cols = st.columns(2)
+                for i, img_path in enumerate(images):
+                    with cols[i % 2]:
+                        name = os.path.basename(img_path).replace('.png', '').replace('_', ' ')
+                        st.markdown(f"<div style='text-align: center; margin-bottom: 10px; font-weight: 600; color: #FBC02D;'>{name}</div>", unsafe_allow_html=True)
+                        st.image(img_path, use_container_width=True)
+                        st.write("")
 
-# ================= TAB 3: AI BENCHMARKING =================
+# ================= TAB 3: PREDICTIVE ENGINE =================
 with tab3:
-    st.markdown("### AI Routing Matrix: Linear vs Neural")
-    st.markdown("<p style='color: #8B949E; margin-bottom: 30px;'>Enter origin and destination parameters to run a live inference benchmark between the Sklearn Linear baseline and the advanced CatBoost Regressor.</p>", unsafe_allow_html=True)
+    st.markdown("### AI Trip Estimator")
+    st.markdown("<p style='color: #8B949E; margin-bottom: 30px;'>Input trip parameters to generate highly accurate ETA predictions using our advanced routing intelligence.</p>", unsafe_allow_html=True)
     
-    if cb_model is None or lr_model is None:
-        st.error("⚠️ AI Models unavailable.")
+    if cb_model is None:
+        st.error("⚠️ AI Model unavailable.")
     else:
         zone_dict = zones_df.drop_duplicates(subset=['Zone']).set_index('Zone').to_dict(orient='index')
         valid_zones = sorted([z for z in zones_df['Zone'].dropna().unique() if z != 'Unknown'])
@@ -241,8 +301,8 @@ with tab3:
         with st.form("benchmark_form"):
             c_f1, c_f2, c_f3 = st.columns(3)
             with c_f1:
-                input_pu_zone = st.selectbox("Origin Node", options=valid_zones, index=valid_zones.index('Upper East Side South') if 'Upper East Side South' in valid_zones else 0)
-                input_do_zone = st.selectbox("Destination Node", options=valid_zones, index=valid_zones.index('JFK Airport') if 'JFK Airport' in valid_zones else 1)
+                input_pu_zone = st.selectbox("Origin Location", options=valid_zones, index=valid_zones.index('Upper East Side South') if 'Upper East Side South' in valid_zones else 0)
+                input_do_zone = st.selectbox("Destination Location", options=valid_zones, index=valid_zones.index('JFK Airport') if 'JFK Airport' in valid_zones else 1)
             with c_f2:
                 input_passenger = st.number_input("Passenger Load", min_value=1, max_value=6, value=1)
                 input_hour = st.slider("Departure Hour", 0, 23, 17)
@@ -251,7 +311,7 @@ with tab3:
                 input_day = st.selectbox("Departure Day", options=day_opts)
                 day_to_num = {d: i for i, d in enumerate(day_opts)}
                 
-            submitted = st.form_submit_button("Execute Inference", type="primary", use_container_width=True)
+            submitted = st.form_submit_button("Calculate Estimated Time", type="primary", use_container_width=True)
             
         if submitted:
             pu_id = zone_dict[input_pu_zone]['LocationID']
@@ -269,38 +329,21 @@ with tab3:
                 "pickup_dayofweek": day_to_num[input_day], "passenger_count": input_passenger
             }])
             
-            is_wknd = 1 if input_day in ['Saturday', 'Sunday'] else 0
-            is_inter = 0 if pu_boro == do_boro else 1
-            lr_df = pd.DataFrame([{
-                "pickup_borough": pu_boro, "dropoff_borough": do_boro,
-                "pickup_hour": input_hour, "pickup_dayofweek": day_to_num[input_day],
-                "is_weekend": is_wknd, "is_interborough_trip": is_inter, "passenger_count": input_passenger
-            }])
-            
             cb_pred = cb_model.predict(cb_df)[0]
-            lr_pred = lr_model.predict(lr_df)[0]
             
             st.write("")
-            col_lr, col_cb = st.columns(2)
+            col_spacer1, col_center, col_spacer2 = st.columns([1, 2, 1])
             
-            with col_lr:
+            with col_center:
                 st.markdown(f"""
-                <div class="ai-card">
-                    <div style="color: #8B949E; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Baseline Architecture</div>
-                    <div style="font-size: 20px; font-weight: 600; margin-top: 4px;">Linear Regression</div>
-                    <div class="ai-time">{lr_pred:.1f} <span style="font-size: 24px; color: #8B949E;">MIN</span></div>
-                    <div style="font-size: 13px; color: #8B949E;">Features: Borough-level aggregation, Time, Weekend status</div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-            with col_cb:
-                st.markdown(f"""
-                <div class="ai-card ai-card-winner">
-                    <div class="ai-badge">Optimized</div>
-                    <div style="color: #FBC02D; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Neural Decision Trees</div>
-                    <div style="font-size: 20px; font-weight: 600; margin-top: 4px;">CatBoost Regressor</div>
-                    <div class="ai-time ai-time-winner">{cb_pred:.1f} <span style="font-size: 24px; color: #FBC02D;">MIN</span></div>
-                    <div style="font-size: 13px; color: #8B949E;">Features: Zone-level exact routing, Euclidean Centroid distance</div>
+                <div class="ai-card ai-card-winner" style="padding: 40px; border-radius: 20px;">
+                    <div class="ai-badge" style="background-color: #2EA043; color: white;">AI Optimized</div>
+                    <div style="color: #8B949E; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;">Estimated Trip Duration</div>
+                    <div class="ai-time ai-time-winner" style="font-size: 72px; margin: 20px 0;">{cb_pred:.1f} <span style="font-size: 28px; color: #FBC02D;">MIN</span></div>
+                    <div style="font-size: 14px; color: #8B949E; display: flex; justify-content: space-between; border-top: 1px solid #2D3139; padding-top: 16px; margin-top: 20px;">
+                        <span>📍 {est_dist:.1f} Miles</span>
+                        <span>🛣️ Inter-borough: {'Yes' if pu_boro != do_boro else 'No'}</span>
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
 
