@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  nyc-taxi-dashboard:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: nyc-taxi-dashboard
+    ports:
+      - "8505:8501"  # Port host : Port container
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
