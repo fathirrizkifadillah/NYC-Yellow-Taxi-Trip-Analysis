@@ -24,3 +24,5 @@ venv/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+.agents
